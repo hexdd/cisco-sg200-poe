@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import argparse
 import math
@@ -24,8 +24,7 @@ class CiscoSwitch:
             return True;
         except requests.exceptions.RequestException as e:
             print("Error Connecting")
-            print(e)
-            #print(e.args[0])
+            if verbose: print(e)
             return True
         
         return False;
@@ -58,6 +57,7 @@ class CiscoSwitch:
             return True;
         except requests.exceptions.RequestException as e:
             print ("Error Connecting")
+            if verbose: print(e)
             return True
 
         if r.status_code == 302:
@@ -131,10 +131,12 @@ if __name__ == '__main__':
             help='login username')
     parser.add_argument('-p', '--password', type=str, nargs=1, required=True,
             help='login password')
+
     parser.add_argument('-P', '--port', type=int, nargs=1, required=True,
             help='port number', choices=range(1, 5))
     parser.add_argument('-e', '--enable', type=int, nargs=1, required=True,
             help='enable or disable PoE', choices=range(0, 2))
+
     parser.add_argument('-v', '--verbose', action='store_true',
             help='enable verbose output')
 
