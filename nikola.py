@@ -50,7 +50,7 @@ class CiscoSwitch:
             
         url = self.hostname + '/EditPoESettingsPortLimit.html/a1'
         try:
-            r = self.session.post(url, data, allow_redirects=False, timeout=3)
+            r = self.session.post(url, data, timeout=3)
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print(e.args[0])
