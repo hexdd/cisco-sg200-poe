@@ -13,7 +13,6 @@ class CiscoSwitch:
         self.session = requests.session()
 
     def login(self):
-
         # load previously generated cookie
         cookie_file = "/tmp/cisco-" + self.hostname + ".cookie"
         try:
@@ -82,8 +81,6 @@ class CiscoSwitch:
         if r.status_code == 302:
             print('Error: login attempt failed')
             return True;
-        #else:
-            #print(r.text)
         
         return False;
         
@@ -174,5 +171,3 @@ if __name__ == '__main__':
     result = cisco.poe_enable(port=args.port[0], enable=args.enable[0]);
     if result:
         print('Unable to perform action')
-    else:
-        print('Successfully modified switch parameter')
