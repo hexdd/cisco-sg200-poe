@@ -1,21 +1,30 @@
 #!/usr/bin/python3
 
 import argparse
-import math
 import requests
 import pickle
 
 class CiscoSwitch:
     def __init__(self, hostname, username, password):
-        self.hostname = 'http://' + hostname
+        self.hostname = hostname
         self.username = username
         self.pwd2 = self.final_encode(password)
         if verbose: print('encoded password (pwd2) is', self.pwd2)
-            
-    def login(self):
         self.session = requests.session()
+
+    def login(self):
+
+        # load previously generated cookie
+        cookie_file = "/tmp/cisco-" + self.hostname + ".cookie"
+        try:
+            with open(cookie_file, 'rb') as f:
+                self.session.cookies.update(pickle.load(f))
+        except:
+            if verbose: print("no cookie present")
+
+        # do login
         data = { 'uname': self.username, 'pwd2': self.pwd2 }
-        url = self.hostname + '/nikola_login.html'
+        url = 'http://' + self.hostname + '/nikola_login.html'
         try:
             r = self.session.post(url, data, allow_redirects=False, timeout=3)
             r.raise_for_status()
@@ -26,7 +35,17 @@ class CiscoSwitch:
             print("Error Connecting")
             if verbose: print(e)
             return True
-        
+
+        # save the cookie for later
+        if verbose: print(self.session.cookies.get_dict())
+        try:
+            if verbose: print('Saving cookie file: ' + cookie_file)
+            with open(cookie_file, 'wb') as f:
+                pickle.dump(self.session.cookies, f)
+        except:
+            print('unable to save cookie')
+            return True;
+
         return False;
     
     def poe_enable(self, port, enable):
@@ -48,9 +67,9 @@ class CiscoSwitch:
             'dbgopt': '0',
         }
             
-        url = self.hostname + '/EditPoESettingsPortLimit.html/a1'
+        url = 'http://' + self.hostname + '/EditPoESettingsPortLimit.html/a1'
         try:
-            r = self.session.post(url, data, timeout=3)
+            r = self.session.post(url, data, allow_redirects=False, timeout=3)
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print(e.args[0])
@@ -63,6 +82,8 @@ class CiscoSwitch:
         if r.status_code == 302:
             print('Error: login attempt failed')
             return True;
+        #else:
+            #print(r.text)
         
         return False;
         
