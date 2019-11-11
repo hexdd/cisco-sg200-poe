@@ -4,3 +4,6 @@ way interface with it via HTTP.
 This script allows you to login to your Cisco switch to toggle PoE power on
 individual ports so you don't have to use the HTTP interface.
 So far this has only been tested on a SG 200-08P.
+## Credits
+This work was based off this guys awesome batch script:
+https://sites.google.com/site/sg20008/
