@@ -1,25 +1,28 @@
-#!/usr/bin/python3
+#! /usr/bin/env python3
 
 import argparse
 import requests
 import pickle
+import tempfile
+import os.path
 
 class CiscoSwitch:
-    def __init__(self, hostname, username, password):
+    def __init__(self, hostname, username, password, verbose=False):
         self.hostname = hostname
         self.username = username
         self.pwd2 = self.final_encode(password)
-        if verbose: print('encoded password (pwd2) is', self.pwd2)
+        self.verbose = verbose
+        if self.verbose: print('encoded password (pwd2) is', self.pwd2)
         self.session = requests.session()
 
     def login(self):
         # load previously generated cookie
-        cookie_file = "/tmp/cisco-" + self.hostname + ".cookie"
+        cookie_file = os.path.join(tempfile.gettempdir(), "cisco-" + self.hostname + ".cookie")
         try:
             with open(cookie_file, 'rb') as f:
                 self.session.cookies.update(pickle.load(f))
         except:
-            if verbose: print("no cookie present")
+            if self.verbose: print("no cookie present")
 
         # do login
         data = { 'uname': self.username, 'pwd2': self.pwd2 }
@@ -32,13 +35,13 @@ class CiscoSwitch:
             return True;
         except requests.exceptions.RequestException as e:
             print("Error Connecting")
-            if verbose: print(e)
+            if self.verbose: print(e)
             return True
 
         # save the cookie for later
-        if verbose: print(self.session.cookies.get_dict())
+        if self.verbose: print(self.session.cookies.get_dict())
         try:
-            if verbose: print('Saving cookie file: ' + cookie_file)
+            if self.verbose: print('Saving cookie file: ' + cookie_file)
             with open(cookie_file, 'wb') as f:
                 pickle.dump(self.session.cookies, f)
         except:
@@ -75,7 +78,7 @@ class CiscoSwitch:
             return True;
         except requests.exceptions.RequestException as e:
             print ("Error Connecting")
-            if verbose: print(e)
+            if self.verbose: print(e)
             return True
 
         if r.status_code == 302:
@@ -163,11 +166,10 @@ if __name__ == '__main__':
     except:
         exit(1)
     
-    verbose = args.verbose
-    if verbose:
+    if args.verbose:
         print('Accessing host', args.hostname[0]);
     
-    cisco = CiscoSwitch(args.hostname[0], args.username[0], args.password[0])
+    cisco = CiscoSwitch(args.hostname[0], args.username[0], args.password[0], args.verbose)
     result = cisco.poe_enable(port=args.port[0], enable=args.enable[0]);
     if result:
         print('Unable to perform action')
